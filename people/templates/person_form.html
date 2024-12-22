@@ -1,0 +1,98 @@
+{% extends 'index.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<h1>{{ title }}</h1>
+<form method="post" enctype="multipart/form-data" class="p-4 bg-light border rounded">
+  {% csrf_token %}
+  <h2 class="mb-4">{{ title }}</h2>
+
+  <!-- Person Information Section -->
+  <div class="mb-4">
+      <h4>Personal Information</h4>
+      <div class="mb-3">
+          <label for="id_name" class="form-label">{{ form.name.label }}</label>
+          {{ form.name }}
+      </div>
+      <div class="mb-3">
+          <label for="id_image" class="form-label">{{ form.image.label }}</label>
+          {{ form.image }}
+      </div>
+  </div>
+
+  <!-- Labels Section -->
+  <div class="mb-4">
+      <h4>Labels</h4>
+      <div class="mb-3">
+          <label class="form-label">Select Existing Labels</label>
+          {{ form.labels }}
+      </div>
+      <div class="mb-3">
+          <label for="custom_label" class="form-label">Add a Custom Label</label>
+          {{ form.custom_label }}
+      </div>
+  </div>
+
+  <!-- Links Section -->
+  <div class="mb-4">
+      <h4>Links</h4>
+      {{ formset.management_form }}
+      <div id="formset-container">
+          {% for link_form in formset %}
+              <div class="formset-row mb-3 p-3 border rounded bg-white">
+                  <div class="row g-3">
+                      <div class="col-md-5">
+                          {{ link_form.url.label_tag }} {{ link_form.url }}
+                      </div>
+                      <div class="col-md-5">
+                          {{ link_form.description.label_tag }} {{ link_form.description }}
+                      </div>
+                      <div class="col-md-2 d-flex align-items-center">
+                          {{ link_form.id }}
+                          {% if link_form.instance.pk %}
+                              {{ link_form.DELETE.label }} {{ link_form.DELETE }}
+                          {% endif %}
+                      </div>
+                  </div>
+              </div>
+          {% endfor %}
+      </div>
+      <button type="button" id="add-link" class="btn btn-secondary mt-3">Add Another Link</button>
+  </div>
+
+  <!-- Submit Section -->
+  <div class="d-flex justify-content-between">
+      <button type="submit" class="btn btn-primary">Save</button>
+      <a href="{% url 'person_list' %}" class="btn btn-secondary">Back to People List</a>
+  </div>
+</form>
+
+<script>
+  document.getElementById('add-link').addEventListener('click', function () {
+    let container = document.getElementById('formset-container');
+    let totalForms = document.getElementById('id_links-TOTAL_FORMS');
+    let formNum = parseInt(totalForms.value);
+    let newForm = container.children[0].cloneNode(true);
+
+    // Reset input values in the cloned form
+    Array.from(newForm.querySelectorAll('input')).forEach(input => {
+        if (input.name.includes('id')) {
+            input.value = ''; // Clear the id field for new forms
+        } else {
+            input.value = ''; // Clear other input values
+        }
+    });
+
+    // Update the new form's attributes
+    newForm.innerHTML = newForm.innerHTML.replace(/-0-/g, `-${formNum}-`);
+    newForm.innerHTML = newForm.innerHTML.replace(/__prefix__/g, formNum);
+    container.appendChild(newForm);
+
+    // Increment TOTAL_FORMS to include the new form
+    totalForms.value = formNum + 1;
+  });
+
+
+</script>
+{% endblock %}
